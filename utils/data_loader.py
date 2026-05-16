@@ -1,9 +1,3 @@
-"""
-Veri Yükleme ve İşleme Modülü
-Tuğrul Şahar (233255027) - Burak Yetişer (233255007)
-
-Bu modül MovieLens veri setini yükler ve işler.
-"""
 
 import pandas as pd
 import numpy as np
@@ -14,14 +8,7 @@ import os
 
 
 class MovieLensDataset(Dataset):
-    """
-    PyTorch Dataset sınıfı - MovieLens için
-    
-    Args:
-        user_ids (array): Kullanıcı ID dizisi
-        movie_ids (array): Film ID dizisi
-        ratings (array): Puan dizisi
-    """
+
     
     def __init__(self, user_ids, movie_ids, ratings):
         self.user_ids = torch.LongTensor(user_ids)
@@ -36,47 +23,36 @@ class MovieLensDataset(Dataset):
 
 
 class DataLoader_ML:
-    """
-    MovieLens veri setini yükler ve işler
-    """
+ 
     
     def __init__(self, data_dir="data/raw/ml-100k/", test_size=0.2, random_state=42):
-        """
-        Args:
-            data_dir (str): Veri dizini
-            test_size (float): Test verisi oranı
-            random_state (int): Rastgelelik seed
-        """
+       
         self.data_dir = data_dir
         self.test_size = test_size
         self.random_state = random_state
         
-        # Veri çerçeveleri
+        
         self.ratings_df = None
         self.movies_df = None
         self.users_df = None
         
-        # İşlenmiş veriler
+      
         self.train_data = None
         self.test_data = None
         self.val_data = None
         
-        # ID mapping'leri
         self.user_id_map = {}
         self.movie_id_map = {}
         self.reverse_user_map = {}
         self.reverse_movie_map = {}
         
-        # İstatistikler
+        
         self.num_users = 0
         self.num_movies = 0
         self.num_ratings = 0
     
     def load_ratings(self):
-        """
-        Puanlama verilerini yükle
-        MovieLens 100K formatı: user_id | movie_id | rating | timestamp
-        """
+       
         ratings_file = os.path.join(self.data_dir, "u.data")
         
         print(f"Puanlama verileri yükleniyor: {ratings_file}")
@@ -94,14 +70,11 @@ class DataLoader_ML:
         return self.ratings_df
     
     def load_movies(self):
-        """
-        Film bilgilerini yükle
-        """
+       
         movies_file = os.path.join(self.data_dir, "u.item")
         
         print(f"Film bilgileri yükleniyor: {movies_file}")
         
-        # MovieLens 100K film dosyası sütun isimleri
         movie_cols = ['movie_id', 'title', 'release_date', 'video_release_date',
                       'imdb_url', 'unknown', 'Action', 'Adventure', 'Animation',
                       'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
@@ -120,10 +93,7 @@ class DataLoader_ML:
         return self.movies_df
     
     def load_users(self):
-        """
-        Kullanıcı bilgilerini yükle (opsiyonel)
-        """
-        users_file = os.path.join(self.data_dir, "u.user")
+        users_file= os.path.join(self.data_dir, "u.user")
         
         if os.path.exists(users_file):
             print(f"Kullanıcı bilgileri yükleniyor: {users_file}")
@@ -143,52 +113,42 @@ class DataLoader_ML:
             return None
     
     def create_id_mappings(self):
-        """
-        Kullanıcı ve film ID'lerini 0'dan başlayan sürekli indexlere dönüştür
-        """
+       
         print("\nID mapping'leri oluşturuluyor...")
         
-        # Benzersiz ID'leri al
+       
         unique_user_ids = self.ratings_df['user_id'].unique()
         unique_movie_ids = self.ratings_df['movie_id'].unique()
         
-        # 0'dan başlayan index'ler oluştur
+       
         self.user_id_map = {old_id: new_id for new_id, old_id in enumerate(unique_user_ids)}
         self.movie_id_map = {old_id: new_id for new_id, old_id in enumerate(unique_movie_ids)}
         
-        # Ters mapping'ler (tahmin sonuçlarını orijinal ID'lere dönüştürmek için)
+      
         self.reverse_user_map = {v: k for k, v in self.user_id_map.items()}
         self.reverse_movie_map = {v: k for k, v in self.movie_id_map.items()}
         
-        # Sayıları kaydet
+       
         self.num_users = len(self.user_id_map)
         self.num_movies = len(self.movie_id_map)
         
         print(f"✓ {self.num_users} kullanıcı")
         print(f"✓ {self.num_movies} film")
         
-        # DataFrame'i güncelle
         self.ratings_df['user_idx'] = self.ratings_df['user_id'].map(self.user_id_map)
         self.ratings_df['movie_idx'] = self.ratings_df['movie_id'].map(self.movie_id_map)
     
     def split_data(self, val_size=0.1):
-        """
-        Veriyi train/validation/test olarak ayır
-        
-        Args:
-            val_size (float): Validation verisi oranı
-        """
+     
         print(f"\nVeri ayrılıyor (Train/Val/Test)...")
         
-        # Önce train+val ve test'e ayır
         train_val_df, test_df = train_test_split(
             self.ratings_df,
             test_size=self.test_size,
             random_state=self.random_state,
-            stratify=self.ratings_df['rating']  # Her puandan dengeli dağılım
+            stratify=self.ratings_df['rating'] 
         )
         
-        # Train+val'i train ve val'e ayır
         val_ratio = val_size / (1 - self.test_size)
         train_df, val_df = train_test_split(
             train_val_df,
@@ -196,8 +156,7 @@ class DataLoader_ML:
             random_state=self.random_state,
             stratify=train_val_df['rating']
         )
-        
-        # Dataset objelerine dönüştür
+
         self.train_data = MovieLensDataset(
             train_df['user_idx'].values,
             train_df['movie_idx'].values,
@@ -221,16 +180,7 @@ class DataLoader_ML:
         print(f"✓ Test: {len(self.test_data):,} örnek ({len(self.test_data)/len(self.ratings_df)*100:.1f}%)")
     
     def get_data_loaders(self, batch_size=256, num_workers=2):
-        """
-        PyTorch DataLoader'ları oluştur
-        
-        Args:
-            batch_size (int): Batch boyutu
-            num_workers (int): Paralel işlemci sayısı
-            
-        Returns:
-            tuple: (train_loader, val_loader, test_loader)
-        """
+    
         train_loader = DataLoader(
             self.train_data,
             batch_size=batch_size,
@@ -258,7 +208,7 @@ class DataLoader_ML:
         return train_loader, val_loader, test_loader
     
     def get_statistics(self):
-        """Veri seti istatistiklerini döndür"""
+   
         stats = {
             'num_users': self.num_users,
             'num_movies': self.num_movies,
@@ -285,7 +235,7 @@ class DataLoader_ML:
         return stats
     
     def print_statistics(self):
-        """Veri seti istatistiklerini yazdır"""
+       
         stats = self.get_statistics()
         
         print("\n" + "=" * 60)
@@ -304,7 +254,7 @@ class DataLoader_ML:
         print("=" * 60)
     
     def get_movie_title(self, movie_id):
-        """Film ID'sine göre film başlığını döndür"""
+     
         if self.movies_df is not None:
             movie = self.movies_df[self.movies_df['movie_id'] == movie_id]
             if not movie.empty:
@@ -312,7 +262,7 @@ class DataLoader_ML:
         return f"Film {movie_id}"
     
     def prepare_data(self):
-        """Tüm veri hazırlama işlemlerini sırayla çalıştır"""
+ 
         print("\n" + "=" * 60)
         print("VERİ HAZIRLAMA BAŞLIYOR")
         print("=" * 60)
@@ -329,16 +279,14 @@ class DataLoader_ML:
 
 
 if __name__ == "__main__":
-    # Test
+   
     print("Data Loader Test Ediliyor...")
     
     data_loader = DataLoader_ML(data_dir="data/raw/ml-100k/")
     data_loader.prepare_data()
-    
-    # DataLoader'ları oluştur
+  
     train_loader, val_loader, test_loader = data_loader.get_data_loaders(batch_size=32)
     
-    # İlk batch'i kontrol et
     for user_ids, movie_ids, ratings in train_loader:
         print(f"\nBatch şekli:")
         print(f"User IDs: {user_ids.shape}")

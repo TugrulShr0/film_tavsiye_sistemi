@@ -1,8 +1,5 @@
 """
-Toplu Film Önerisi Scripti
-Tuğrul Şahar (233255027) - Burak Yetişer (233255007)
-
-Bu script birden fazla kullanıcı için toplu film önerileri oluşturur.
+ birden fazla kullanıcı için toplu film önerileri
 """
 
 import torch
@@ -17,22 +14,13 @@ from config import config
 from ncf_model import NCFModel
 from utils.data_loader import DataLoader_ML
 
-
 class BatchRecommender:
-    """
-    Toplu öneri sistemi
-    """
     
     def __init__(self, model_path, data_loader):
-        """
-        Args:
-            model_path (str): Model checkpoint yolu
-            data_loader (DataLoader_ML): Veri yükleyici
-        """
+    
         self.data_loader = data_loader
         self.device = config.DEVICE
-        
-        # Modeli yükle
+  
         print(f"Model yükleniyor: {model_path}")
         checkpoint = torch.load(model_path, map_location=self.device,weights_only=False)
         
@@ -54,30 +42,19 @@ class BatchRecommender:
     
     def generate_recommendations_for_users(self, user_ids, top_k=10, 
                                           exclude_rated=True):
-        """
-        Birden fazla kullanıcı için öneriler oluştur
-        
-        Args:
-            user_ids (list): Kullanıcı ID listesi
-            top_k (int): Her kullanıcı için öneri sayısı
-            exclude_rated (bool): Puanlanan filmleri çıkar
-            
-        Returns:
-            dict: Kullanıcı ID -> öneriler mapping'i
-        """
+      
         all_recommendations = {}
         all_movie_ids = list(self.data_loader.movie_id_map.keys())
         
         print(f"\n{len(user_ids)} kullanıcı için öneriler oluşturuluyor...")
         
         for user_id in tqdm(user_ids, desc="Öneriler oluşturuluyor"):
-            # Kullanıcı index'ini al
+          
             user_idx = self.data_loader.user_id_map.get(user_id)
             
             if user_idx is None:
                 continue
             
-            # Puanlanan filmleri bul
             if exclude_rated:
                 user_ratings = self.data_loader.ratings_df[
                     self.data_loader.ratings_df['user_id'] == user_id
@@ -91,7 +68,6 @@ class BatchRecommender:
             if len(candidate_movie_ids) == 0:
                 continue
             
-            # Tahminler yap (batch processing)
             batch_size = 1000
             all_predictions = []
             all_candidate_ids = []
@@ -110,7 +86,6 @@ class BatchRecommender:
                     all_predictions.extend(batch_predictions.cpu().numpy())
                     all_candidate_ids.extend(batch_movie_ids)
             
-            # En yüksek puanlı filmleri seç
             top_indices = np.argsort(all_predictions)[-top_k:][::-1]
             
             recommendations = []
@@ -134,12 +109,6 @@ class BatchRecommender:
     def generate_recommendations_for_all_users(self, top_k=10):
         """
         Tüm kullanıcılar için öneriler oluştur
-        
-        Args:
-            top_k (int): Her kullanıcı için öneri sayısı
-            
-        Returns:
-            dict: Tüm kullanıcı önerileri
         """
         all_user_ids = self.data_loader.ratings_df['user_id'].unique()
         return self.generate_recommendations_for_users(all_user_ids, top_k=top_k)
@@ -147,10 +116,6 @@ class BatchRecommender:
     def save_recommendations_to_csv(self, recommendations, output_file):
         """
         Önerileri CSV dosyasına kaydet
-        
-        Args:
-            recommendations (dict): Öneriler dictionary
-            output_file (str): Çıktı dosya yolu
         """
         rows = []
         
@@ -175,19 +140,9 @@ class BatchRecommender:
     def save_recommendations_to_json(self, recommendations, output_file):
         """
         Önerileri JSON dosyasına kaydet
-        
-        Args:
-            recommendations (dict): Öneriler dictionary
-            output_file (str): Çıktı dosya yolu
+    
         """
         import json
-        """
-        # JSON'a dönüştürülebilir hale getir
-        json_recommendations = {
-            str(user_id): recs 
-            for user_id, recs in recommendations.items()
-        }
-        """
         json_recommendations = {
         str(user_id): [
          {
@@ -208,22 +163,14 @@ class BatchRecommender:
         print(f"✓ Öneriler kaydedildi: {output_file}")
     
     def generate_user_similarity_matrix(self, sample_size=100):
-        """
-        Kullanıcı benzerlik matrisi oluştur (embedding tabanlı)
-        
-        Args:
-            sample_size (int): Örneklem boyutu
-            
-        Returns:
-            DataFrame: Benzerlik matrisi
-        """
-        # Rastgele kullanıcılar seç
+     
+      
         all_users = list(self.data_loader.user_id_map.keys())
         sample_users = np.random.choice(all_users, 
                                        min(sample_size, len(all_users)), 
                                        replace=False)
         
-        # Embedding'leri al
+      
         user_embeddings = []
         user_ids_sampled = []
         
@@ -235,11 +182,10 @@ class BatchRecommender:
         
         user_embeddings = np.array(user_embeddings)
         
-        # Cosine similarity hesapla
+        
         from sklearn.metrics.pairwise import cosine_similarity
         similarity_matrix = cosine_similarity(user_embeddings)
         
-        # DataFrame'e dönüştür
         similarity_df = pd.DataFrame(
             similarity_matrix,
             index=user_ids_sampled,
@@ -249,34 +195,24 @@ class BatchRecommender:
         return similarity_df
     
     def find_similar_users(self, user_id, top_k=5):
-        """
-        Benzer kullanıcıları bul
-        
-        Args:
-            user_id (int): Kullanıcı ID
-            top_k (int): En benzer kullanıcı sayısı
-            
-        Returns:
-            list: Benzer kullanıcılar ve benzerlik skorları
-        """
+      
         user_idx = self.data_loader.user_id_map.get(user_id)
         
         if user_idx is None:
             return []
         
-        # Bu kullanıcının embedding'ini al
+      
         user_embedding = self.model.user_embedding(
             torch.tensor([user_idx])
         ).detach().cpu().numpy()
         
-        # Tüm kullanıcı embedding'lerini al
         all_embeddings = self.model.user_embedding.weight.data.cpu().numpy()
         
-        # Cosine similarity hesapla
+   
         from sklearn.metrics.pairwise import cosine_similarity
         similarities = cosine_similarity(user_embedding, all_embeddings)[0]
         
-        # En benzer kullanıcıları bul (kendisi hariç)
+      
         top_indices = np.argsort(similarities)[-top_k-1:-1][::-1]
         
         similar_users = []
@@ -320,15 +256,15 @@ def main():
     
     args = parser.parse_args()
     
-    # Veriyi yükle
+    
     print("Veri yükleniyor...")
     data_loader = DataLoader_ML(data_dir=args.data_dir)
     data_loader.prepare_data()
     
-    # Recommender oluştur
+   
     recommender = BatchRecommender(args.model, data_loader)
     
-    # Kullanıcıları belirle
+    
     if args.mode == 'all':
         print("\nTüm kullanıcılar için öneriler oluşturuluyor...")
         recommendations = recommender.generate_recommendations_for_all_users(top_k=args.top_k)
@@ -352,7 +288,7 @@ def main():
             user_ids, top_k=args.top_k
         )
     
-    # Sonuçları kaydet
+    
     if args.output_csv:
         recommender.save_recommendations_to_csv(recommendations, args.output_csv)
     
@@ -361,7 +297,6 @@ def main():
     
     print("\n✓ Toplu öneri işlemi tamamlandı!")
     
-    # Örnek öneri göster
     sample_user = list(recommendations.keys())[0]
     print(f"\nÖrnek: Kullanıcı {sample_user} için öneriler:")
     for i, rec in enumerate(recommendations[sample_user][:5], 1):

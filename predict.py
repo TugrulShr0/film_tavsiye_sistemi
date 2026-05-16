@@ -17,8 +17,6 @@ class MovieRecommender:
         self.device = config.DEVICE
 
         print(f"Model yükleniyor: {model_path}")
-
-        # 🔥 KRİTİK FIX: safe loading
         checkpoint = torch.load(
             model_path,
             map_location=self.device,

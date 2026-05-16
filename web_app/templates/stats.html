@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstatistikler - Film Tavsiye Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Veri Seti İstatistikleri</h1>
+        </header>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Genel Bilgiler</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Toplam Kullanıcı:</span>
+                    <span class="stat-value">{{ stats.num_users|int }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Toplam Film:</span>
+                    <span class="stat-value">{{ stats.num_movies|int }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Toplam Puanlama:</span>
+                    <span class="stat-value">{{ stats.num_ratings|int }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Veri Seyrekliği:</span>
+                    <span class="stat-value">{{ "%.2f"|format(stats.sparsity * 100) }}%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Puan İstatistikleri</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Ortalama Puan:</span>
+                    <span class="stat-value">{{ "%.2f"|format(stats.avg_rating) }}★</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Standart Sapma:</span>
+                    <span class="stat-value">{{ "%.2f"|format(stats.std_rating) }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Minimum Puan:</span>
+                    <span class="stat-value">{{ stats.min_rating|int }}★</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Maximum Puan:</span>
+                    <span class="stat-value">{{ stats.max_rating|int }}★</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Kullanıcı Bazlı</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Ort. Kullanıcı Puanı:</span>
+                    <span class="stat-value">{{ "%.1f"|format(stats.avg_ratings_per_user) }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Min Kullanıcı Puanı:</span>
+                    <span class="stat-value">{{ stats.min_ratings_per_user|int }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max Kullanıcı Puanı:</span>
+                    <span class="stat-value">{{ stats.max_ratings_per_user|int }}</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Film Bazlı</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Ort. Film Puanı:</span>
+                    <span class="stat-value">{{ "%.1f"|format(stats.avg_ratings_per_movie) }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Min Film Puanı:</span>
+                    <span class="stat-value">{{ stats.min_ratings_per_movie|int }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max Film Puanı:</span>
+                    <span class="stat-value">{{ stats.max_ratings_per_movie|int }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/" class="back-button">← Ana Sayfaya Dön</a>
+        </div>
+    </div>
+</body>
+</html>

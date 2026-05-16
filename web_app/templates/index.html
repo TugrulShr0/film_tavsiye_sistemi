@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Tavsiye Sistemi</title>
+    <style>
+     * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+   
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    background-color: #f3f4f6;
+    min-height: 100vh;
+    padding: 60px 20px;
+    color: #111111;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 950px; 
+    margin: 0 auto;
+}
+
+header {
+   
+    text-align: left;
+    margin-bottom: 60px;
+    padding-bottom: 35px;
+    border-bottom: 2px solid #111111; 
+}
+
+header h1 {
+    font-size: 2.8em;
+    font-weight: 900; 
+    letter-spacing: -1.5px; 
+    color: #111111;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.1em;
+    color: #555555;
+    font-weight: 400;
+}
+
+.stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 45px;
+}
+
+.stat-card {
+    background: #ffffff;
+    flex: 1;
+    padding: 24px;
+    border-radius: 0px; 
+    box-shadow: none; 
+    border: 1px solid #e0e0e0; 
+    text-align: left;
+}
+
+.stat-card h3 {
+    color: #111111;
+    font-size: 2.2em;
+    font-weight: 800;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
+}
+
+.stat-card p {
+    color: #888888;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+.main-card {
+    background: #ffffff;
+    border-radius: 0px; 
+    padding: 45px;
+    border: 1px solid #111111; 
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 700;
+    color: #111111;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.input-row {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+}
+
+input, select {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #111111;
+    background-color: #ffffff;
+    border-radius: 0px;
+    font-size: 0.95em;
+    font-family: inherit;
+    color: #111111;
+    transition: background-color 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    background-color: #f9f9f9; 
+}
+
+button {
+    padding: 15px 35px;
+    background: #111111; 
+    color: #ffffff;
+    border: 1px solid #111111;
+    border-radius: 0px;
+    font-size: 0.95em;
+    font-weight: 700;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #ffffff;
+    color: #111111; 
+    transform: none; 
+}
+
+button:active {
+    background: #eeeeee;
+}
+
+.section-title {
+    font-size: 1.3em;
+    color: #111111;
+    margin-bottom: 30px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.movie-card {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 0px;
+    border: 1px solid #e0e0e0;
+}
+
+.movie-card:hover {
+    transform: none; 
+    border-color: #111111; 
+}
+
+.movie-card h4 {
+    color: #111111;
+    font-size: 1em;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.rating {
+    margin-top: 10px;
+    color: #555555;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+
+.rating span:first-child {
+    display: none; 
+}
+.rating::before {
+    content: "Skor: ";
+    color: #888888;
+    font-weight: 400;
+}
+
+.recommendations-list {
+    gap: 0px; 
+}
+
+.recommendation-item {
+    background: #ffffff;
+    border-left: none;
+    padding: 20px;
+    border-radius: 0px;
+    box-shadow: none;
+    border-bottom: 1px solid #e0e0e0; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.recommendation-item:hover {
+    background-color: #fafafa;
+    box-shadow: none;
+    transform: none;
+}
+
+.rec-rank {
+    font-size: 1.1em;
+    color: #888888;
+    font-weight: 700;
+    min-width: 40px;
+}
+
+.rec-title {
+    color: #111111;
+    font-size: 1.05em;
+    font-weight: 700;
+}
+
+.rec-score {
+    color: #111111;
+    font-weight: 800;
+    font-size: 1.1em;
+}
+.rec-score span:first-child {
+    display: none; 
+}
+
+
+.quick-select {
+    margin-top: 15px;
+    align-items: center;
+}
+
+.quick-btn {
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #111111;
+    border-radius: 0px;
+    color: #111111;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.quick-btn:hover {
+    background: #111111;
+    color: #ffffff;
+}
+
+footer {
+    text-align: left;
+    color: #888888;
+    margin-top: 80px;
+    font-size: 0.8em;
+    border-top: 1px solid #111111;
+    padding-top: 25px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.error {
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #ff0000;
+    border-radius: 0px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Film Tavsiye Sistemi</h1>
+            <p>Yapay Zeka ile Kişiselleştirilmiş Film Önerileri</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>{{ total_users }}</h3>
+                <p>Kullanıcı</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ total_movies }}</h3>
+                <p>Film</p>
+            </div>
+            <div class="stat-card">
+                <h3>100K</h3>
+                <p>Puanlama</p>
+            </div>
+        </div>
+        
+        <div class="main-card">
+            <div class="input-group">
+                <label>👤 Kullanıcı Seçin:</label>
+                <div class="input-row">
+                    <input type="number" id="userId" placeholder="Kullanıcı ID girin (1-943)" min="1" max="943">
+                    <input type="number" id="topK" placeholder="Kaç öneri?" value="10" min="1" max="20">
+                    <button onclick="getRecommendations()">Önerileri Getir</button>
+                </div>
+             
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Öneriler hazırlanıyor...</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="results" id="results">
+                <div id="historySection">
+                    <h2 class="section-title">📚 Kullanıcının Beğendiği Filmler</h2>
+                    <div class="history-grid" id="historyGrid"></div>
+                </div>
+                
+                <div id="recommendationsSection">
+                    <h2 class="section-title">✨ Size Özel Öneriler</h2>
+                    <div class="recommendations-list" id="recommendationsList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Derin Öğrenme ile Neural Collaborative Filtering</p>
+        </footer>
+    </div>
+    
+    <script>
+        function selectUser(userId) {
+            document.getElementById('userId').value = userId;
+        }
+        
+        async function getRecommendations() {
+            const userId = document.getElementById('userId').value;
+            const topK = document.getElementById('topK').value || 10;
+            
+            if (!userId) {
+                showError('Lütfen bir kullanıcı ID girin!');
+                return;
+            }
+            
+       
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            
+            try {
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: parseInt(userId),
+                        top_k: parseInt(topK)
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Bir hata oluştu');
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function displayResults(data) {
+          
+            const historyGrid = document.getElementById('historyGrid');
+            historyGrid.innerHTML = '';
+            
+            data.history.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.innerHTML = `
+                    <h4>${movie.title}</h4>
+                    <div class="rating">
+                        <span>⭐</span>
+                        <span>${movie.rating.toFixed(1)}</span>
+                    </div>
+                `;
+                historyGrid.appendChild(card);
+            });
+            
+        
+            const recList = document.getElementById('recommendationsList');
+            recList.innerHTML = '';
+            
+            data.recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="rec-rank">${rec.rank}</div>
+                    <div class="rec-title">${rec.title}</div>
+                    <div class="rec-score">
+                        <span>⭐</span>
+                        <span>${rec.predicted_score.toFixed(2)}</span>
+                    </div>
+                `;
+                recList.appendChild(item);
+            });
+            
+           
+            document.getElementById('results').style.display = 'block';
+            
+          
+            document.getElementById('results').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        document.getElementById('userId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getRecommendations();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,9 +1,3 @@
-"""
-Model Değerlendirme Modülü
-Tuğrul Şahar (233255027) - Burak Yetişer (233255007)
-
-Bu modül model performansını değerlendirmek için metrikler içerir.
-"""
 
 import torch
 import numpy as np
@@ -11,11 +5,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 class Evaluator:
-    """
-    Model değerlendirme sınıfı
-    """
+    
     
     def __init__(self):
         self.metrics_history = {
@@ -29,75 +20,28 @@ class Evaluator:
     
     @staticmethod
     def calculate_rmse(predictions, targets):
-        """
-        Root Mean Square Error hesapla
-        
-        Args:
-            predictions (array): Tahmin edilen değerler
-            targets (array): Gerçek değerler
-            
-        Returns:
-            float: RMSE değeri
-        """
+       
         return np.sqrt(mean_squared_error(targets, predictions))
     
     @staticmethod
     def calculate_mae(predictions, targets):
-        """
-        Mean Absolute Error hesapla
         
-        Args:
-            predictions (array): Tahmin edilen değerler
-            targets (array): Gerçek değerler
-            
-        Returns:
-            float: MAE değeri
-        """
         return mean_absolute_error(targets, predictions)
     
     @staticmethod
     def calculate_mse(predictions, targets):
-        """
-        Mean Square Error hesapla
-        
-        Args:
-            predictions (array): Tahmin edilen değerler
-            targets (array): Gerçek değerler
-            
-        Returns:
-            float: MSE değeri
-        """
+      
         return mean_squared_error(targets, predictions)
     
     @staticmethod
     def calculate_accuracy(predictions, targets, threshold=0.5):
-        """
-        Accuracy hesapla (tahmin ile gerçek değer arasındaki fark threshold'dan küçükse doğru)
-        
-        Args:
-            predictions (array): Tahmin edilen değerler
-            targets (array): Gerçek değerler
-            threshold (float): Kabul edilebilir hata eşiği
-            
-        Returns:
-            float: Accuracy değeri (0-1 arası)
-        """
+      
         correct = np.abs(predictions - targets) <= threshold
         return np.mean(correct)
     
     @staticmethod
     def calculate_precision_at_k(predicted_items, relevant_items, k):
-        """
-        Precision@K metriği
-        
-        Args:
-            predicted_items (list): Önerilen itemler
-            relevant_items (list): İlgili (beğenilen) itemler
-            k (int): Top-K değeri
-            
-        Returns:
-            float: Precision@K değeri
-        """
+       
         if k == 0:
             return 0.0
         
@@ -110,17 +54,7 @@ class Evaluator:
     
     @staticmethod
     def calculate_recall_at_k(predicted_items, relevant_items, k):
-        """
-        Recall@K metriği
-        
-        Args:
-            predicted_items (list): Önerilen itemler
-            relevant_items (list): İlgili (beğenilen) itemler
-            k (int): Top-K değeri
-            
-        Returns:
-            float: Recall@K değeri
-        """
+       
         if len(relevant_items) == 0:
             return 0.0
         
@@ -133,29 +67,17 @@ class Evaluator:
     
     @staticmethod
     def calculate_ndcg_at_k(predicted_items, relevant_items, k):
-        """
-        Normalized Discounted Cumulative Gain@K metriği
         
-        Args:
-            predicted_items (list): Önerilen itemler
-            relevant_items (list): İlgili itemler (sıralı - en alakalıdan en az alakalıya)
-            k (int): Top-K değeri
-            
-        Returns:
-            float: NDCG@K değeri
-        """
         def dcg_at_k(items, k):
             items_k = items[:k]
             return sum((2**rel - 1) / np.log2(idx + 2) for idx, rel in enumerate(items_k))
         
-        # Tahmin edilen itemler için relevance skorları
+       
         predicted_k = predicted_items[:k]
         relevance_scores = [1 if item in relevant_items else 0 for item in predicted_k]
         
-        # DCG hesapla
         dcg = dcg_at_k(relevance_scores, k)
         
-        # İdeal DCG hesapla (tüm ilgili itemler başta)
         ideal_relevance = sorted(relevance_scores, reverse=True)
         idcg = dcg_at_k(ideal_relevance, k)
         
@@ -165,18 +87,7 @@ class Evaluator:
         return dcg / idcg
     
     def evaluate_model(self, model, data_loader, device, criterion=None):
-        """
-        Modeli bir veri seti üzerinde değerlendir
-        
-        Args:
-            model: PyTorch modeli
-            data_loader: Veri yükleyici
-            device: Hesaplama cihazı
-            criterion: Loss fonksiyonu (opsiyonel)
-            
-        Returns:
-            dict: Değerlendirme metrikleri
-        """
+  
         model.eval()
         
         all_predictions = []
@@ -189,19 +100,15 @@ class Evaluator:
                 movie_ids = movie_ids.to(device)
                 ratings = ratings.to(device)
                 
-                # Tahmin yap
                 predictions = model(user_ids, movie_ids)
-                
-                # Loss hesapla (eğer verilmişse)
+           
                 if criterion is not None:
                     loss = criterion(predictions, ratings)
                     total_loss += loss.item()
-                
-                # Listeye ekle
+            
                 all_predictions.extend(predictions.cpu().numpy())
                 all_targets.extend(ratings.cpu().numpy())
-        
-        # Metrikleri hesapla
+       
         all_predictions = np.array(all_predictions)
         all_targets = np.array(all_targets)
         
@@ -219,7 +126,7 @@ class Evaluator:
         return metrics
     
     def update_history(self, epoch, train_metrics, val_metrics):
-        """Eğitim geçmişini güncelle"""
+     
         self.metrics_history['train_loss'].append(train_metrics.get('loss', 0))
         self.metrics_history['val_loss'].append(val_metrics.get('loss', 0))
         self.metrics_history['train_rmse'].append(train_metrics['rmse'])
@@ -228,7 +135,7 @@ class Evaluator:
         self.metrics_history['val_mae'].append(val_metrics['mae'])
     
     def print_metrics(self, metrics, phase='Test'):
-        """Metrikleri yazdır"""
+      
         print(f"\n{phase} Sonuçları:")
         print("-" * 40)
         if 'loss' in metrics:
@@ -241,12 +148,7 @@ class Evaluator:
         print("-" * 40)
     
     def plot_training_history(self, save_path=None):
-        """
-        Eğitim geçmişini görselleştir
-        
-        Args:
-            save_path (str): Grafiklerin kaydedileceği yol
-        """
+     
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         
         epochs = range(1, len(self.metrics_history['train_loss']) + 1)
@@ -299,17 +201,10 @@ class Evaluator:
         plt.show()
     
     def plot_prediction_distribution(self, predictions, targets, save_path=None):
-        """
-        Tahmin dağılımını görselleştir
-        
-        Args:
-            predictions (array): Tahminler
-            targets (array): Gerçek değerler
-            save_path (str): Grafiklerin kaydedileceği yol
-        """
+      
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         
-        # Scatter plot - Tahmin vs Gerçek
+       
         axes[0].scatter(targets, predictions, alpha=0.3, s=10)
         axes[0].plot([1, 5], [1, 5], 'r--', lw=2, label='Perfect Prediction')
         axes[0].set_xlabel('Actual Rating')
@@ -318,7 +213,6 @@ class Evaluator:
         axes[0].legend()
         axes[0].grid(True, alpha=0.3)
         
-        # Histogram - Tahmin dağılımı
         axes[1].hist(predictions, bins=50, alpha=0.7, label='Predictions', edgecolor='black')
         axes[1].hist(targets, bins=50, alpha=0.7, label='Actual', edgecolor='black')
         axes[1].set_xlabel('Rating')
@@ -327,7 +221,7 @@ class Evaluator:
         axes[1].legend()
         axes[1].grid(True, alpha=0.3)
         
-        # Hata dağılımı
+        
         errors = predictions - targets
         axes[2].hist(errors, bins=50, alpha=0.7, edgecolor='black', color='red')
         axes[2].axvline(x=0, color='k', linestyle='--', lw=2)
@@ -346,10 +240,9 @@ class Evaluator:
 
 
 if __name__ == "__main__":
-    # Test
+    
     print("Evaluator Test Ediliyor...")
     
-    # Dummy veri
     np.random.seed(42)
     targets = np.random.uniform(1, 5, 1000)
     predictions = targets + np.random.normal(0, 0.5, 1000)
@@ -360,8 +253,7 @@ if __name__ == "__main__":
     print(f"RMSE: {evaluator.calculate_rmse(predictions, targets):.4f}")
     print(f"MAE: {evaluator.calculate_mae(predictions, targets):.4f}")
     print(f"Accuracy (±0.5): {evaluator.calculate_accuracy(predictions, targets, 0.5):.2%}")
-    
-    # Precision/Recall test
+
     predicted_items = [1, 2, 3, 4, 5]
     relevant_items = [2, 4, 6, 8]
     

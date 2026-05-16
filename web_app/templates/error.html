@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hata - Film Tavsiye Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-container {
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .error-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        
+        .steps h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .steps ol {
+            padding-left: 20px;
+        }
+        
+        .steps li {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        a {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        a:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1>Bir Sorun Oluştu</h1>
+        <div class="error-message">{{ message }}</div>
+        
+        <div class="steps">
+            <h3>Sorunu Çözmek İçin:</h3>
+            <ol>
+                <li>Veri setini indirin: <code>python download_data.py</code></li>
+                <li>Modeli eğitin: <code>python train.py --epochs 50</code></li>
+                <li>Web uygulamasını başlatın: <code>python web_app/app.py</code></li>
+            </ol>
+        </div>
+        
+        <a href="/">Ana Sayfaya Dön</a>
+    </div>
+</body>
+</html>

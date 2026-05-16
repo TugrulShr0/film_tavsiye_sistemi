@@ -1,7 +1,3 @@
-"""
-Hiperparametre Optimizasyonu
-Bu script farklı hiperparametre kombinasyonlarını test eder.
-"""
 
 import torch
 import torch.nn as nn
@@ -20,34 +16,17 @@ from utils.evaluation import Evaluator
 
 
 class HyperparameterTuner:
-    """
-    Hiperparametre optimizasyonu için sınıf
-    """
+   
     
     def __init__(self, data_loader, device):
-        """
-        Args:
-            data_loader: Veri yükleyici
-            device: Hesaplama cihazı
-        """
+       
         self.data_loader = data_loader
         self.device = device
         self.results = []
     
     def train_with_params(self, params, train_loader, val_loader, max_epochs=30):
-        """
-        Belirli parametrelerle model eğit
         
-        Args:
-            params (dict): Hiperparametreler
-            train_loader: Eğitim veri yükleyici
-            val_loader: Doğrulama veri yükleyici
-            max_epochs (int): Maximum epoch sayısı
-            
-        Returns:
-            dict: Sonuçlar
-        """
-        # Model oluştur
+        
         model = NCFModel(
             num_users=self.data_loader.num_users,
             num_movies=self.data_loader.num_movies,
@@ -56,7 +35,7 @@ class HyperparameterTuner:
             dropout_rate=params['dropout_rate']
         ).to(self.device)
         
-        # Optimizer ve loss
+    
         criterion = nn.MSELoss()
         optimizer = optim.Adam(
             model.parameters(),
@@ -64,16 +43,16 @@ class HyperparameterTuner:
             weight_decay=params['weight_decay']
         )
         
-        # Evaluator
+    
         evaluator = Evaluator()
         
         best_val_loss = float('inf')
         patience_counter = 0
         patience = 5
         
-        # Eğitim
+    
         for epoch in range(max_epochs):
-            # Training
+       
             model.train()
             train_loss = 0.0
             
@@ -92,10 +71,10 @@ class HyperparameterTuner:
             
             train_loss /= len(train_loader)
             
-            # Validation
+        
             val_metrics = evaluator.evaluate_model(model, val_loader, self.device, criterion)
             
-            # Early stopping check
+        
             if val_metrics['loss'] < best_val_loss:
                 best_val_loss = val_metrics['loss']
                 patience_counter = 0
@@ -113,21 +92,12 @@ class HyperparameterTuner:
         }
     
     def grid_search(self, param_grid, max_epochs=30):
-        """
-        Grid search ile en iyi parametreleri bul
-        
-        Args:
-            param_grid (dict): Parametre grid'i
-            max_epochs (int): Her kombinasyon için max epoch
-            
-        Returns:
-            dict: En iyi parametreler ve sonuçlar
-        """
+   
         print("\n" + "=" * 70)
         print("HİPERPARAMETRE OPTİMİZASYONU - GRID SEARCH")
         print("=" * 70)
         
-        # Tüm kombinasyonları oluştur
+       
         param_names = list(param_grid.keys())
         param_values = list(param_grid.values())
         
@@ -136,16 +106,14 @@ class HyperparameterTuner:
         
         print(f"\nToplam {total_combinations} kombinasyon test edilecek")
         print(f"Her kombinasyon için max {max_epochs} epoch eğitim\n")
-        
-        # DataLoader'ları hazırla
+     
         train_loader, val_loader, _ = self.data_loader.get_data_loaders(
             batch_size=256
         )
         
         best_params = None
         best_score = float('inf')
-        
-        # Her kombinasyonu test et
+      
         for idx, combination in enumerate(all_combinations, 1):
             params = dict(zip(param_names, combination))
             
@@ -159,7 +127,7 @@ class HyperparameterTuner:
             try:
                 results = self.train_with_params(params, train_loader, val_loader, max_epochs)
                 
-                # Sonuçları kaydet
+               
                 result_entry = {
                     'combination_id': idx,
                     'params': params,
@@ -171,7 +139,6 @@ class HyperparameterTuner:
                 print(f"  ✓ Val RMSE: {results['best_val_rmse']:.4f}")
                 print(f"  ✓ Epochs: {results['epochs_trained']}")
                 
-                # En iyi skoru güncelle
                 if results['best_val_loss'] < best_score:
                     best_score = results['best_val_loss']
                     best_params = params
@@ -195,17 +162,7 @@ class HyperparameterTuner:
         return best_params, self.results
     
     def random_search(self, param_distributions, n_iterations=20, max_epochs=30):
-        """
-        Random search ile parametre optimizasyonu
-        
-        Args:
-            param_distributions (dict): Parametre dağılımları
-            n_iterations (int): Deneme sayısı
-            max_epochs (int): Her deneme için max epoch
-            
-        Returns:
-            dict: En iyi parametreler
-        """
+       
         print("\n" + "=" * 70)
         print("HİPERPARAMETRE OPTİMİZASYONU - RANDOM SEARCH")
         print("=" * 70)
@@ -266,13 +223,11 @@ class HyperparameterTuner:
         return best_params, self.results
     
     def save_results(self, filename='hyperparameter_results.json'):
-        """Sonuçları JSON dosyasına kaydet"""
         output_dir = 'results/hyperparameter_tuning'
         os.makedirs(output_dir, exist_ok=True)
         
         filepath = os.path.join(output_dir, filename)
         
-        # JSON'a dönüştürülebilir hale getir
         json_results = []
         for result in self.results:
             json_result = {
@@ -293,12 +248,10 @@ class HyperparameterTuner:
         print(f"\n✓ Sonuçlar kaydedildi: {filepath}")
     
     def print_summary(self):
-        """Sonuçların özetini yazdır"""
         if not self.results:
             print("Henüz sonuç yok!")
             return
-        
-        # DataFrame'e dönüştür
+    
         summary_data = []
         for result in self.results:
             row = {
@@ -322,7 +275,7 @@ class HyperparameterTuner:
 
 
 def main():
-    """Ana fonksiyon"""
+    
     import argparse
     
     parser = argparse.ArgumentParser(description='Hiperparametre Optimizasyonu')
@@ -338,16 +291,15 @@ def main():
     
     args = parser.parse_args()
     
-    # Veriyi yükle
+   
     print("Veri yükleniyor...")
     data_loader = DataLoader_ML(data_dir=args.data_dir)
     data_loader.prepare_data()
-    
-    # Tuner oluştur
+   
     tuner = HyperparameterTuner(data_loader, config.DEVICE)
     
     if args.method == 'grid':
-        # Grid search parametreleri
+      
         param_grid = {
             'embedding_dim': [32, 64, 128],
             'hidden_layers': [
@@ -363,7 +315,7 @@ def main():
         best_params, results = tuner.grid_search(param_grid, max_epochs=args.max_epochs)
     
     elif args.method == 'random':
-        # Random search parametreleri
+       
         param_distributions = {
             'embedding_dim': (32, 128),  # Range
             'hidden_layers': [
@@ -384,12 +336,11 @@ def main():
             max_epochs=args.max_epochs
         )
     
-    # Sonuçları kaydet
+   
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f'hyperparameter_results_{args.method}_{timestamp}.json'
     tuner.save_results(filename)
     
-    # Özet yazdır
     tuner.print_summary()
     
     print("\n✓ Optimizasyon tamamlandı!")

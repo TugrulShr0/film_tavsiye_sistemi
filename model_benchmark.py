@@ -36,20 +36,7 @@ class ModelBenchmark:
     
     def train_model(self, model, model_name, train_loader, val_loader, 
                     epochs=50, learning_rate=0.001):
-        """
-        Tek bir modeli eğit ve değerlendir
-        
-        Args:
-            model: PyTorch modeli
-            model_name (str): Model adı
-            train_loader: Eğitim veri yükleyici
-            val_loader: Doğrulama veri yükleyici
-            epochs (int): Epoch sayısı
-            learning_rate (float): Öğrenme oranı
-            
-        Returns:
-            dict: Model sonuçları
-        """
+     
         print(f"\n{'=' * 70}")
         print(f"MODELİ EĞİTİYOR: {model_name}")
         print(f"{'=' * 70}")
@@ -62,11 +49,11 @@ class ModelBenchmark:
         training_time = 0
         best_val_loss = float('inf')
         
-        # Eğitim
+    
         for epoch in range(epochs):
             epoch_start = time.time()
             
-            # Training
+            
             model.train()
             train_loss = 0.0
             
@@ -85,7 +72,7 @@ class ModelBenchmark:
             
             train_loss /= len(train_loader)
             
-            # Validation
+           
             val_metrics = evaluator.evaluate_model(model, val_loader, self.device, criterion)
             
             epoch_time = time.time() - epoch_start
@@ -103,7 +90,7 @@ class ModelBenchmark:
         
         print(f"\n✓ Eğitim tamamlandı - Toplam süre: {training_time:.2f}s")
         
-        # Model bilgileri
+    
         num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         
         return {
@@ -117,22 +104,17 @@ class ModelBenchmark:
         }
     
     def benchmark_all_models(self, epochs=50):
-        """
-        Tüm modelleri karşılaştır
-        
-        Args:
-            epochs (int): Her model için epoch sayısı
-        """
+    
         print("\n" + "=" * 70)
         print("MODEL BENCHMARK BAŞLIYOR")
         print("=" * 70)
         
-        # DataLoader'ları hazırla
+       
         train_loader, val_loader, test_loader = self.data_loader.get_data_loaders(
             batch_size=256
         )
         
-        # Model 1: NCF (Küçük)
+      
         ncf_small = NCFModel(
             num_users=self.data_loader.num_users,
             num_movies=self.data_loader.num_movies,
@@ -144,7 +126,7 @@ class ModelBenchmark:
             ncf_small, 'NCF (Small)', train_loader, val_loader, epochs
         )
         
-        # Model 2: NCF (Orta)
+      
         ncf_medium = NCFModel(
             num_users=self.data_loader.num_users,
             num_movies=self.data_loader.num_movies,
@@ -156,7 +138,7 @@ class ModelBenchmark:
             ncf_medium, 'NCF (Medium)', train_loader, val_loader, epochs
         )
         
-        # Model 3: NCF (Büyük)
+      
         ncf_large = NCFModel(
             num_users=self.data_loader.num_users,
             num_movies=self.data_loader.num_movies,
@@ -168,7 +150,7 @@ class ModelBenchmark:
             ncf_large, 'NCF (Large)', train_loader, val_loader, epochs
         )
         
-        # Model 4: Matrix Factorization
+      
         mf_model = MatrixFactorization(
             num_users=self.data_loader.num_users,
             num_movies=self.data_loader.num_movies,
@@ -178,7 +160,7 @@ class ModelBenchmark:
             mf_model, 'Matrix Factorization', train_loader, val_loader, epochs
         )
         
-        # Test setinde değerlendirme
+       
         print("\n" + "=" * 70)
         print("TEST SETİ DEĞERLENDİRMESİ")
         print("=" * 70)
@@ -233,7 +215,7 @@ class ModelBenchmark:
         num_params = [self.results[m]['num_parameters'] for m in model_names]
         training_time = [self.results[m]['training_time'] for m in model_names]
         
-        # RMSE karşılaştırması
+      
         x = np.arange(len(model_names))
         width = 0.35
         
@@ -247,7 +229,7 @@ class ModelBenchmark:
         axes[0, 0].legend()
         axes[0, 0].grid(True, alpha=0.3)
         
-        # Parametre sayısı vs Performans
+        
         axes[0, 1].scatter(num_params, test_rmse, s=200, alpha=0.6)
         for i, name in enumerate(model_names):
             axes[0, 1].annotate(name, (num_params[i], test_rmse[i]), 
@@ -257,13 +239,13 @@ class ModelBenchmark:
         axes[0, 1].set_title('Model Karmaşıklığı vs Performans')
         axes[0, 1].grid(True, alpha=0.3)
         
-        # Eğitim süresi karşılaştırması
+       
         axes[1, 0].barh(model_names, training_time, alpha=0.8)
         axes[1, 0].set_xlabel('Eğitim Süresi (saniye)')
         axes[1, 0].set_title('Eğitim Süresi Karşılaştırması')
         axes[1, 0].grid(True, alpha=0.3, axis='x')
         
-        # MAE karşılaştırması
+       
         axes[1, 1].bar(model_names, test_mae, alpha=0.8, color='coral')
         axes[1, 1].set_ylabel('Test MAE')
         axes[1, 1].set_title('MAE Karşılaştırması')
@@ -296,7 +278,6 @@ class ModelBenchmark:
         return best_model
     
     def save_results(self, filename='model_benchmark_results.csv'):
-        """Sonuçları CSV'ye kaydet"""
         import os
         
         output_dir = 'results/benchmarks'
@@ -337,29 +318,26 @@ def main():
     
     args = parser.parse_args()
     
-    # Veriyi yükle
+    
     print("Veri yükleniyor...")
     data_loader = DataLoader_ML(data_dir=args.data_dir)
     data_loader.prepare_data()
     
-    # Benchmark oluştur
+    
     benchmark = ModelBenchmark(data_loader, config.DEVICE)
     
-    # Tüm modelleri test et
     benchmark.benchmark_all_models(epochs=args.epochs)
     
-    # Sonuçları yazdır
+   
     benchmark.print_comparison_table()
     
-    # En iyi modeli göster
+   
     benchmark.get_winner()
-    
-    # Grafikleri oluştur
+ 
     import os
     os.makedirs(os.path.dirname(args.save_plot), exist_ok=True)
     benchmark.plot_comparison(save_path=args.save_plot)
     
-    # Sonuçları kaydet
     benchmark.save_results()
     
     print("\n✓ Benchmark tamamlandı!")

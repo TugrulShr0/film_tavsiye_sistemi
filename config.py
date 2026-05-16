@@ -3,7 +3,6 @@
 import torch
 
 class Config:
-    """Model ve eğitim için genel konfigürasyonlar"""
     
     # Veri yolları
     DATA_DIR = "data/"
@@ -69,7 +68,7 @@ class Config:
         config_str += "=" * 50
         return config_str
 
-# Singleton pattern
+
 config = Config()
 
 if __name__ == "__main__":
