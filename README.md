@@ -131,3 +131,12 @@ konularında pratik yapılmıştır.
 * Collaborative Filtering desteği
 * Gerçek zamanlı öneri sistemi
 * TMDB API entegrasyonu
+
+---
+
+# 👨‍💻 Geliştiriciler
+
+Burak Yetişer
+Tuğrul Şahar
+
+---
